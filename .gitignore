@@ -1,0 +1,15 @@
+# a comment - this is ignored
+# ignore .consign, *.d, *.so, *.eps, *.swp, all the log file and script in StRoot
+*.swp
+temp_gccflags.c
+
+McPhiDecay/*_C.*
+McPhiDecay/*.pdf
+McPhiDecay/*.eps
+
+McLambdaDecay/*_C.*
+McLambdaDecay/*.pdf
+McLambdaDecay/*.eps
+
+figures/*
+!figures/c_phiRhoEta.eps

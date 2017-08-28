@@ -129,7 +129,7 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
   f_spec = readspec(energy,pid,cent);
   h_eta = readeta(energy,pid,cent);
 
-  float pHPhy = 0.02;
+  float pHPhy = 0.02; // input pH value
   f_pHPhy = new TF1("f_pHPhy",polarization,-1.0,1.0,3);
   f_pHPhy->FixParameter(0,pHPhy);
   f_pHPhy->FixParameter(1,1.0);

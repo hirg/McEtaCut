@@ -24,9 +24,9 @@
 
 using namespace std;
 
-TF1* readv2(int energy, int pid, int centrality);
-TF1* readspec(int energy, int pid, int centrality);
+TH1F* readpt(int energy, int pid, int centrality);
 TH1F* readeta(int energy, int pid, int centrality);
+TH1F* readphi(int energy, int pid, int centrality);
 void getKinematics(TLorentzVector& lLambda, double const mass);
 void setDecayChannels(int const pid);
 void decayAndFill(int const pid, TLorentzVector* lLambda, TClonesArray& daughters);
@@ -66,14 +66,15 @@ TProfile *p_cosInteDau[20], *p_cosInteLambda[20], *p_cosInteDauOnly[20];
 TProfile *p_sinDau[20],     *p_sinLambda[20],     *p_sinDauOnly[20];
 TProfile *p_sinInteDau[20], *p_sinInteLambda[20], *p_sinInteDauOnly[20];
 
+TFile *File_InPut;
 // sampling functions
-TF1 *f_v2, *f_spec, *f_flow, *f_EP;
 TF1 *f_pHPhy;
-TH1F *h_eta;
+TH1F *h_pt, *h_eta, *h_phi;
+
 
 TPythia6Decayer* pydecay;
 
-void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 1000000, int counter = 0) // pid = 0 for Lambda, 1 for anti-Lambda
+void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 10000000, int counter = 0) // pid = 0 for Lambda, 1 for anti-Lambda
 {
   int const BinPt    = vmsa::BinPt;
   int const BinY     = vmsa::BinY;
@@ -124,10 +125,12 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
     p_sinInteDauOnly[i_eta] = new TProfile(ProName.c_str(),ProName.c_str(),1,vmsa::McEtaBin[i_eta]-0.1,vmsa::McEtaBin[i_eta]+0.1);
   }
 
-  f_flow = new TF1("f_flow",flowSample,-TMath::Pi(),TMath::Pi(),1);
-  f_v2   = readv2(energy,pid,cent);
-  f_spec = readspec(energy,pid,cent);
+  string InPutKinematics = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/Data/Kinematics.root",vmsa::mBeamEnergy[energy].c_str());
+  File_InPut = TFile::Open(InPutKinematics.c_str());
+
+  h_pt  = readpt(energy,pid,cent);
   h_eta = readeta(energy,pid,cent);
+  h_phi = readphi(energy,pid,cent);
 
   float pHPhy = 0.02; // input pH value
   f_pHPhy = new TF1("f_pHPhy",polarization,-1.0,1.0,3);
@@ -164,121 +167,35 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
   stopWatch->Print();
 }
 
-TF1* readv2(int energy, int pid, int centrality)
+TH1F* readpt(int energy, int pid, int centrality)
 {
-  string InPutV2 = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/Data/Phi_v2_1040.root",vmsa::mBeamEnergy[energy].c_str());
-  TFile *File_v2 = TFile::Open(InPutV2.c_str());
-  TGraphAsymmErrors *g_v2 = (TGraphAsymmErrors*)File_v2->Get("g_v2");
-  TF1 *f_v2 = new TF1("f_v2",v2_pT_FitFunc,vmsa::ptMin,vmsa::ptMax,5);
-  f_v2->FixParameter(0,2);
-  f_v2->SetParameter(1,0.1);
-  f_v2->SetParameter(2,0.1);
-  f_v2->SetParameter(3,0.1);
-  f_v2->SetParameter(4,0.1);
-  f_v2->SetLineColor(2);
-  f_v2->SetLineWidth(2);
-  f_v2->SetLineStyle(2);
-  g_v2->Fit(f_v2,"N");
+  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_Lambda");
+  TH1F *h_pt = (TH1F*)h_Kinematics->Project3D("x")->Clone();
 
-  /*
-  TCanvas *c_v2 = new TCanvas("c_v2","c_v2",10,10,800,800);
-  c_v2->cd()->SetLeftMargin(0.15);
-  c_v2->cd()->SetBottomMargin(0.15);
-  c_v2->cd()->SetTicks(1,1);
-  c_v2->cd()->SetGrid(0,0);
-  TH1F *h_v2 = new TH1F("h_v2","h_v2",100,0.0,10.0);
-  for(int i_bin = 1; i_bin < 101; ++i_bin)
-  {
-    h_v2->SetBinContent(i_bin,-10.0);
-    h_v2->SetBinError(i_bin,1.0);
-  }
-  h_v2->SetTitle("");
-  h_v2->SetStats(0);
-  h_v2->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  h_v2->GetXaxis()->CenterTitle();
-  h_v2->GetYaxis()->SetTitle("v_{2}");
-  h_v2->GetYaxis()->CenterTitle();
-  h_v2->GetYaxis()->SetRangeUser(0.0,0.2);
-  h_v2->Draw("pE");
-  g_v2->Draw("pE same");
-  f_v2->Draw("l same");
-  */
-
-  return f_v2;
-}
-
-TF1* readspec(int energy, int pid, int centrality)
-{
-  string InPutSpec = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/Data/Phi_Spec.root",vmsa::mBeamEnergy[energy].c_str());
-  TFile *File_Spec = TFile::Open(InPutSpec.c_str());
-  TGraphAsymmErrors *g_spec = (TGraphAsymmErrors*)File_Spec->Get("g_spec");
-  TF1 *f_Levy = new TF1("f_Levy",Levy,vmsa::ptMin,vmsa::ptMax,3);
-  f_Levy->SetParameter(0,1);
-  f_Levy->SetParameter(1,10);
-  f_Levy->SetParameter(2,0.1);
-  f_Levy->SetLineStyle(2);
-  f_Levy->SetLineColor(4);
-  f_Levy->SetLineWidth(2);
-  g_spec->Fit(f_Levy,"N");
-
-  TF1 *f_spec = new TF1("f_spec",pTLevy,vmsa::ptMin,vmsa::ptMax,3);
-  f_spec->SetParameter(0,f_Levy->GetParameter(0));
-  f_spec->SetParameter(1,f_Levy->GetParameter(1));
-  f_spec->SetParameter(2,f_Levy->GetParameter(2));
-  f_spec->SetLineStyle(2);
-  f_spec->SetLineColor(2);
-  f_spec->SetLineWidth(2);
-
-  /*
-  TCanvas *c_spec = new TCanvas("c_spec","c_spec",10,10,800,800);
-  c_spec->cd()->SetLeftMargin(0.15);
-  c_spec->cd()->SetBottomMargin(0.15);
-  c_spec->cd()->SetTicks(1,1);
-  c_spec->cd()->SetGrid(0,0);
-  c_spec->SetLogy();
-  TH1F *h_spec = new TH1F("h_spec","h_spec",100,0.0,10.0);
-  for(int i_bin = 1; i_bin < 101; ++i_bin)
-  {
-    h_spec->SetBinContent(i_bin,-10.0);
-    h_spec->SetBinError(i_bin,1.0);
-  }
-  h_spec->SetTitle("");
-  h_spec->SetStats(0);
-  h_spec->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  h_spec->GetXaxis()->CenterTitle();
-  h_spec->GetYaxis()->SetTitle("dN/p_{T}dp_{T}");
-  h_spec->GetYaxis()->CenterTitle();
-  h_spec->GetYaxis()->SetRangeUser(1E-6,10);
-  h_spec->Draw("pE");
-  g_spec->Draw("pE same");
-  f_Levy->Draw("l same");
-  f_spec->Draw("l same");
-  */
-
-  return f_spec;
+  return h_pt;
 }
 
 TH1F* readeta(int energy, int pid, int centrality)
 {
-  string InPutEta = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/Data/Phi_Eta.root",vmsa::mBeamEnergy[energy].c_str());
-  TFile *File_Eta = TFile::Open(InPutEta.c_str());
-  TH2F *h_mEta_Cos_sig = (TH2F*)File_Eta->Get("h_mEta_Cos_sig");
-  TH1F *h_eta = (TH1F*)h_mEta_Cos_sig->ProjectionX();
+  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_Lambda");
+  TH1F *h_eta = (TH1F*)h_Kinematics->Project3D("y")->Clone();
 
   return h_eta;
 }
 
+TH1F* readphi(int energy, int pid, int centrality)
+{
+  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_Lambda");
+  TH1F *h_phi = (TH1F*)h_Kinematics->Project3D("z")->Clone();
+
+  return h_phi;
+}
+
 void getKinematics(TLorentzVector& lLambda, double const mass)
 {
-  double const pt = f_spec->GetRandom(vmsa::ptMin, vmsa::ptMax);
+  double const pt = h_pt->GetRandom();
   double const eta = h_eta->GetRandom();
-  f_flow->ReleaseParameter(0);
-  f_flow->SetParameter(0,f_v2->Eval(pt));
-  double const phi = f_flow->GetRandom();
-
-  // double const pt = gRandom->Uniform(vmsa::ptMin, vmsa::ptMax);
-  // double const eta = gRandom->Uniform(-5.0*vmsa::acceptanceRapidity, 5.0*vmsa::acceptanceRapidity);
-  // double const phi = TMath::TwoPi() * gRandom->Rndm();
+  double const phi = h_phi->GetRandom();
 
   lLambda.SetPtEtaPhiM(pt,eta,phi,mass);
 }

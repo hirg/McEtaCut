@@ -10,10 +10,11 @@
 #include "../Utility/StSpinAlignmentCons.h"
 #include "../Utility/draw.h"
 
-void plotMcLambdaEta(int pid = 0)
+void plotMcLambdaEta(int energy = 6, int pid = 0)
 {
   string PID[2] = {"L","Lbar"};
-  string InPutHist = Form("/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McLambdaEta_%d.root",pid);
+  // string InPutHist = Form("/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McLambdaEta_%d.root",pid);
+  string InPutHist = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McLambdaEta_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
   TFile *File_InPut = TFile::Open(InPutHist.c_str());
 
   TProfile *p_cosRP, *p_sinRP;
@@ -211,7 +212,9 @@ void plotMcLambdaEta(int pid = 0)
   string outputEtaPPi = Form("../figures/c_EtaPPi_%s.eps",PID[pid].c_str());
   c_EtaPPi->SaveAs(outputEtaPPi.c_str());
   
-  TFile *File_OutPut = new TFile("/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McPH.root","RECREATE");
+  // string outputfile = Form("/Users/xusun/Data/SpinAlignment/AuAu%s/MonteCarlo/McPH_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
+  string outputfile = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McPH_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
+  TFile *File_OutPut = new TFile(outputfile.c_str(),"RECREATE");
   File_OutPut->cd();
   h_play->Write();
   g_Dau->SetName("g_Dau");

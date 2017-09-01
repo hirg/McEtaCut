@@ -16,9 +16,10 @@
 #include "../Utility/draw.h"
 #include "../Utility/StSpinAlignmentCons.h"
 
-void plotMcPhiEta()
+void plotMcPhiEta(int energy = 6)
 {
-  string InPutHist = "/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McPhiEta.root";
+  // string InPutHist = Form("/Users/xusun/Data/SpinAlignment/AuAu%s/MonteCarlo/McPhiEta.root",vmsa::mBeamEnergy[energy].c_str());
+  string InPutHist = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McPhiEta.root",vmsa::mBeamEnergy[energy].c_str());
   TFile *File_InPut = TFile::Open(InPutHist.c_str());
 
   TH3F *h_Eta = (TH3F*)File_InPut->Get("h_Eta");
@@ -256,7 +257,9 @@ void plotMcPhiEta()
   leg->Draw("same");
   c_rhoEta->SaveAs("../figures/c_phiRhoEta.eps");
   
-  TFile *File_OutPut = new TFile("/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McRho.root","RECREATE");
+  // string outputfile = Form("/Users/xusun/Data/SpinAlignment/AuAu%s/MonteCarlo/McRho.root",vmsa::mBeamEnergy[energy].c_str());
+  string outputfile = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McRho.root",vmsa::mBeamEnergy[energy].c_str());
+  TFile *File_OutPut = new TFile(outputfile.c_str(),"RECREATE");
   File_OutPut->cd();
   h_rho->Write();
   g_Kaon->SetName("g_Kaon");

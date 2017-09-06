@@ -68,7 +68,7 @@ void plotMcPhiEta(int energy = 6)
     HistName = Form("h_CosEtaKaon_%d",i_eta);
     h_CosEtaKaon[i_eta] = (TH2F*)File_InPut->Get(HistName.c_str());
     HistName = Form("h_CosKaon_%d",i_eta);
-    h_CosKaon[i_eta] = (TH1F*)h_CosEtaKaon[i_eta]->ProjectionY(HistName.c_str(),1,vmsa::BinPt);
+    h_CosKaon[i_eta] = (TH1F*)h_CosEtaKaon[i_eta]->ProjectionY(HistName.c_str(),3,15); // 0.4-3.0 GeV/c
     h_CosKaon[i_eta]->SetTitle("");
     h_CosKaon[i_eta]->SetStats(0);
     h_CosKaon[i_eta]->GetXaxis()->SetTitle("cos(#theta*)");
@@ -100,7 +100,7 @@ void plotMcPhiEta(int energy = 6)
     HistName = Form("h_CosEtaPhi_%d",i_eta);
     h_CosEtaPhi[i_eta] = (TH2F*)File_InPut->Get(HistName.c_str());
     HistName = Form("h_CosPhi_%d",i_eta);
-    h_CosPhi[i_eta] = (TH1F*)h_CosEtaPhi[i_eta]->ProjectionY(HistName.c_str(),1,vmsa::BinPt);
+    h_CosPhi[i_eta] = (TH1F*)h_CosEtaPhi[i_eta]->ProjectionY(HistName.c_str(),3,15); // 0.4-3.0 GeV/c
     h_CosPhi[i_eta]->SetTitle("");
     h_CosPhi[i_eta]->SetStats(0);
     h_CosPhi[i_eta]->GetXaxis()->SetTitle("cos(#theta*)");
@@ -132,7 +132,7 @@ void plotMcPhiEta(int energy = 6)
     HistName = Form("h_CosEtaKOnly_%d",i_eta);
     h_CosEtaKOnly[i_eta] = (TH2F*)File_InPut->Get(HistName.c_str());
     HistName = Form("h_CosKOnly_%d",i_eta);
-    h_CosKOnly[i_eta] = (TH1F*)h_CosEtaKOnly[i_eta]->ProjectionY(HistName.c_str(),1,vmsa::BinPt);
+    h_CosKOnly[i_eta] = (TH1F*)h_CosEtaKOnly[i_eta]->ProjectionY(HistName.c_str(),3,15); // 0.4-3.0 GeV/c
     h_CosKOnly[i_eta]->SetTitle("");
     h_CosKOnly[i_eta]->SetStats(0);
     h_CosKOnly[i_eta]->GetXaxis()->SetTitle("cos(#theta*)");

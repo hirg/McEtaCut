@@ -16,8 +16,8 @@ namespace vmsa
   std::string const mPID[3]   = {"Phi","KStar","K0S"};
 
   float const ptEffMax = 8.0;
-  float const ptMin = 0.2;
-  float const ptMax = 5.0;
+  float const ptMin = 0.1;
+  float const ptMax = 5.1;
   // int const BinPt  = 80; // for efficiency
   int const BinPt  = 20;
   int const BinEta = 10;

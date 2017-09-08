@@ -33,6 +33,7 @@ void fill(TLorentzVector* lPhi, TLorentzVector const& lKplus, TLorentzVector con
 void write(int energy);
 TVector3 CalBoostedVector(TLorentzVector const lMcDau, TLorentzVector *lMcVec);
 bool passEtaCut(float eta, int BinEta);
+bool passPtCut(float Pt_lKplus, float Pt_lKminus);
 
 // histograms
 TH3F *h_Tracks;
@@ -191,29 +192,28 @@ void fill(TLorentzVector* lPhi, TLorentzVector const& lKplus, TLorentzVector con
   float Pt_lKminus = lKminus.Pt();
   float Eta_lKminus = lKminus.Eta();
 
-  if(Pt_lKplus > 0.1 && Pt_lKminus > 0.1) // pT cut on daughter particles to be consistent with STAR
+  // if( !passPtCut(Pt_lKplus,Pt_lKminus) )  return;
+
+  TVector3 nQ(0.0,-1.0,0.0); // direction of angular momentum with un-smeared EP
+  float CosThetaStarRP = vMcKpBoosted.Dot(nQ);
+
+  h_phiRP->Fill(Pt_lPhi,lPhi->Phi());
+  h_cosRP->Fill(Pt_lPhi,CosThetaStarRP);
+  h_Tracks->Fill(Pt_lPhi,Eta_lPhi,lPhi->Phi());
+  h_Eta->Fill(Eta_lPhi,Eta_lKplus,Eta_lKminus);
+
+  for(int i_eta = 0; i_eta < 20; ++i_eta)
   {
-    TVector3 nQ(0.0,-1.0,0.0); // direction of angular momentum with un-smeared EP
-    float CosThetaStarRP = vMcKpBoosted.Dot(nQ);
+    if( passEtaCut(Eta_lPhi,i_eta) ) h_CosEtaPhi[i_eta]->Fill(Pt_lPhi,CosThetaStarRP);
 
-    h_phiRP->Fill(Pt_lPhi,lPhi->Phi());
-    h_cosRP->Fill(Pt_lPhi,CosThetaStarRP);
-    h_Tracks->Fill(Pt_lPhi,Eta_lPhi,lPhi->Phi());
-    h_Eta->Fill(Eta_lPhi,Eta_lKplus,Eta_lKminus);
-
-    for(int i_eta = 0; i_eta < 20; ++i_eta)
+    if( passEtaCut(Eta_lKplus,i_eta) && passEtaCut(Eta_lKminus,i_eta) && passEtaCut(Eta_lPhi,i_eta) )
     {
-      if( passEtaCut(Eta_lPhi,i_eta) ) h_CosEtaPhi[i_eta]->Fill(Pt_lPhi,CosThetaStarRP);
+      h_CosEtaKaon[i_eta]->Fill(Pt_lPhi,CosThetaStarRP);
+    }
 
-      if( passEtaCut(Eta_lKplus,i_eta) && passEtaCut(Eta_lKminus,i_eta) && passEtaCut(Eta_lPhi,i_eta) )
-      {
-	h_CosEtaKaon[i_eta]->Fill(Pt_lPhi,CosThetaStarRP);
-      }
-
-      if( passEtaCut(Eta_lKplus,i_eta) && passEtaCut(Eta_lKminus,i_eta) )
-      {
-	h_CosEtaKOnly[i_eta]->Fill(Pt_lPhi,CosThetaStarRP);
-      }
+    if( passEtaCut(Eta_lKplus,i_eta) && passEtaCut(Eta_lKminus,i_eta) )
+    {
+      h_CosEtaKOnly[i_eta]->Fill(Pt_lPhi,CosThetaStarRP);
     }
   }
 }
@@ -232,6 +232,13 @@ TVector3 CalBoostedVector(TLorentzVector const lMcDau, TLorentzVector *lMcVec)
 bool passEtaCut(float eta, int BinEta)
 {
   if(TMath::Abs(eta) >= vmsa::McEtaBin[BinEta]) return kFALSE;
+
+  return kTRUE;
+}
+
+bool passPtCut(float Pt_lKplus, float Pt_lKminus)
+{
+  if( !(Pt_lKplus > 0.1 && Pt_lKminus > 0.1) ) return kFALSE; // pT cut on daughter particles to be consistent with STAR
 
   return kTRUE;
 }

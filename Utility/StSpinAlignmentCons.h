@@ -18,8 +18,7 @@ namespace vmsa
   float const ptEffMax = 8.0;
   float const ptMin = 0.0;
   float const ptMax = 5.0;
-  // int const BinPt  = 80; // for efficiency
-  int const BinPt  = 25;
+  int const BinPt  = 50;
   int const BinEta = 10;
   int const BinY = 20;
   int const BinPhi = 24;

@@ -22,6 +22,11 @@ void plotMcPhiEta(int energy = 6)
   string InPutHist = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McPhiEta.root",vmsa::mBeamEnergy[energy].c_str());
   TFile *File_InPut = TFile::Open(InPutHist.c_str());
 
+  // const int Bin_ProjStart = 5; // 0.4 - 3.0 GeV/c
+  // const int Bin_ProjStop  = 30;
+  const int Bin_ProjStart = 1; // all pT
+  const int Bin_ProjStop  = vmsa::BinPt;
+
   TH3F *h_Eta = (TH3F*)File_InPut->Get("h_Eta");
   TH2F *h_eta = (TH2F*)h_Eta->Project3D("yx");
   h_eta->SetTitle("");
@@ -68,7 +73,7 @@ void plotMcPhiEta(int energy = 6)
     HistName = Form("h_CosEtaKaon_%d",i_eta);
     h_CosEtaKaon[i_eta] = (TH2F*)File_InPut->Get(HistName.c_str());
     HistName = Form("h_CosKaon_%d",i_eta);
-    h_CosKaon[i_eta] = (TH1F*)h_CosEtaKaon[i_eta]->ProjectionY(HistName.c_str(),3,15); // 0.4-3.0 GeV/c
+    h_CosKaon[i_eta] = (TH1F*)h_CosEtaKaon[i_eta]->ProjectionY(HistName.c_str(),Bin_ProjStart,Bin_ProjStop);
     h_CosKaon[i_eta]->SetTitle("");
     h_CosKaon[i_eta]->SetStats(0);
     h_CosKaon[i_eta]->GetXaxis()->SetTitle("cos(#theta*)");
@@ -100,7 +105,7 @@ void plotMcPhiEta(int energy = 6)
     HistName = Form("h_CosEtaPhi_%d",i_eta);
     h_CosEtaPhi[i_eta] = (TH2F*)File_InPut->Get(HistName.c_str());
     HistName = Form("h_CosPhi_%d",i_eta);
-    h_CosPhi[i_eta] = (TH1F*)h_CosEtaPhi[i_eta]->ProjectionY(HistName.c_str(),3,15); // 0.4-3.0 GeV/c
+    h_CosPhi[i_eta] = (TH1F*)h_CosEtaPhi[i_eta]->ProjectionY(HistName.c_str(),Bin_ProjStart,Bin_ProjStop);
     h_CosPhi[i_eta]->SetTitle("");
     h_CosPhi[i_eta]->SetStats(0);
     h_CosPhi[i_eta]->GetXaxis()->SetTitle("cos(#theta*)");
@@ -132,7 +137,7 @@ void plotMcPhiEta(int energy = 6)
     HistName = Form("h_CosEtaKOnly_%d",i_eta);
     h_CosEtaKOnly[i_eta] = (TH2F*)File_InPut->Get(HistName.c_str());
     HistName = Form("h_CosKOnly_%d",i_eta);
-    h_CosKOnly[i_eta] = (TH1F*)h_CosEtaKOnly[i_eta]->ProjectionY(HistName.c_str(),3,15); // 0.4-3.0 GeV/c
+    h_CosKOnly[i_eta] = (TH1F*)h_CosEtaKOnly[i_eta]->ProjectionY(HistName.c_str(),Bin_ProjStart,Bin_ProjStop);
     h_CosKOnly[i_eta]->SetTitle("");
     h_CosKOnly[i_eta]->SetStats(0);
     h_CosKOnly[i_eta]->GetXaxis()->SetTitle("cos(#theta*)");

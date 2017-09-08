@@ -34,6 +34,7 @@ void fill(int const pid, TLorentzVector* lLambda, TLorentzVector const& lProton,
 void write(int energy,int pid,int counter);
 TVector3 CalBoostedVector(TLorentzVector const lMcDau, TLorentzVector *lMcVec);
 bool passEtaCut(float eta, int BinEta);
+bool passPtCut(float Pt_Proton, float Pt_Pion, float Pt_Lambda);
 bool Sampling(int const pid, TF1 *f_pHPhy,float CosThetaStar);
 
 double polarization(double *x_val, double *par)
@@ -261,6 +262,8 @@ void fill(int const pid, TLorentzVector* lLambda, TLorentzVector const& lProton,
   float Eta_Pion = lPion.Eta();
   float Phi_Pion = lPion.Phi();
 
+  if( !passPtCut(Pt_Proton,Pt_Pion,Pt_Lambda) )  return;
+
   float Psi = 0.0;
   TVector3 nQ(TMath::Sin(Psi),-TMath::Cos(Psi),0.0); // direction of angular momentum with un-smeared EP
   float CosThetaStarSimple = vMcKpBoosted.Dot(nQ);
@@ -322,6 +325,13 @@ TVector3 CalBoostedVector(TLorentzVector const lMcDau, TLorentzVector *lMcVec)
 bool passEtaCut(float eta, int BinEta)
 {
   if(TMath::Abs(eta) >= vmsa::McEtaBin[BinEta]) return kFALSE;
+
+  return kTRUE;
+}
+
+bool passPtCut(float Pt_Proton, float Pt_Pion, float Pt_Lambda)
+{
+  if( !(Pt_Proton > 0.15 && Pt_Pion > 0.15 && Pt_Lambda > 0.3) ) return kFALSE; // pT cut on daughter particles to be consistent with STAR
 
   return kTRUE;
 }

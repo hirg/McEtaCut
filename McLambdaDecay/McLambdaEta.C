@@ -35,7 +35,7 @@ void write(int energy,int pid,int counter);
 TVector3 CalBoostedVector(TLorentzVector const lMcDau, TLorentzVector *lMcVec);
 bool passEtaCut(float eta, int BinEta);
 bool passPtCut(float Pt_Proton, float Pt_Pion, float Pt_Lambda);
-bool passSTARCut(TLorentzVector lProton, TLorentzVector lPion, TLorentzVector lLambda);
+bool passSTARCut(TLorentzVector lProton, TLorentzVector lPion, TLorentzVector* lLambda);
 bool Sampling(int const pid, TF1 *f_pHPhy,float CosThetaStar);
 
 double polarization(double *x_val, double *par)
@@ -318,8 +318,8 @@ void fill(int const pid, TLorentzVector* lLambda, TLorentzVector const& lProton,
   }
 
   if( !passSTARCut(lProton,lPion,lLambda) ) return; // apply STAR cut
-  p_cosSTAR->Fill(0,CosThetaStarRP);
-  p_sinSTAR->Fill(0,SinPhiStarRP);
+  p_cosSTAR->Fill(0.0,CosThetaStarRP);
+  p_sinSTAR->Fill(0.0,SinPhiStarRP);
 }
 
 TVector3 CalBoostedVector(TLorentzVector const lMcDau, TLorentzVector *lMcVec)
@@ -347,7 +347,7 @@ bool passPtCut(float Pt_Proton, float Pt_Pion, float Pt_Lambda)
   return kTRUE;
 }
 
-bool passSTARCut(TLorentzVector lProton, TLorentzVector lPion, TLorentzVector lLambda)
+bool passSTARCut(TLorentzVector lProton, TLorentzVector lPion, TLorentzVector* lLambda)
 {
   if( !(lProton.Pt() > 0.15 && lProton.Eta() > -1.0 && lProton.Eta() < 1.0) ) 
     return kFALSE; // STAR cut for proton
@@ -355,7 +355,7 @@ bool passSTARCut(TLorentzVector lProton, TLorentzVector lPion, TLorentzVector lL
   if( !(lPion.Pt() > 0.15 && lPion.Eta() > -1.0 && lPion.Eta() < 1.0) ) 
     return kFALSE; // STAR cut for pion
 
-  if( !(lLambda.Pt() > 0.4 && lLambda.Pt() < 3.0 && lLambda.Rapidity() > -1.0 && lLambda.Rapidity() < 1.0) ) 
+  if( !(lLambda->Pt() > 0.4 && lLambda->Pt() < 3.0 && lLambda->Rapidity() > -1.0 && lLambda->Rapidity() < 1.0) ) 
     return kFALSE; // STAR cut for Lambda
 
   return kTRUE;

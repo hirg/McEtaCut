@@ -35,6 +35,7 @@ void write(int energy,int pid,int counter);
 TVector3 CalBoostedVector(TLorentzVector const lMcDau, TLorentzVector *lMcVec);
 bool passEtaCut(float eta, int BinEta);
 bool passPtCut(float Pt_Proton, float Pt_Pion, float Pt_Lambda);
+bool passSTARCut(TLorentzVector lProton, TLorentzVector lPion, TLorentzVector lLambda);
 bool Sampling(int const pid, TF1 *f_pHPhy,float CosThetaStar);
 
 double polarization(double *x_val, double *par)
@@ -67,6 +68,8 @@ TProfile *p_cosInteDau[20], *p_cosInteLambda[20], *p_cosInteDauOnly[20];
 TProfile *p_sinDau[20],     *p_sinLambda[20],     *p_sinDauOnly[20];
 TProfile *p_sinInteDau[20], *p_sinInteLambda[20], *p_sinInteDauOnly[20];
 
+TProfile *p_cosSTAR, *p_sinSTAR;
+
 TFile *File_InPut;
 // sampling functions
 TF1 *f_pHPhy;
@@ -91,6 +94,10 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
 
   p_cosRP = new TProfile("p_cosRP","p_cosRP",BinPt,vmsa::ptMin,vmsa::ptMax);
   p_sinRP = new TProfile("p_sinRP","p_sinRP",BinPt,vmsa::ptMin,vmsa::ptMax);
+
+  p_cosSTAR = new TProfile("p_cosSTAR","p_cosSTAR",1,-1,1);
+  p_sinSTAR = new TProfile("p_sinSTAR","p_sinSTAR",1,-1,1);
+
 
   for(int i_eta = 0; i_eta < 20; ++i_eta)
   {
@@ -262,7 +269,7 @@ void fill(int const pid, TLorentzVector* lLambda, TLorentzVector const& lProton,
   float Eta_Pion = lPion.Eta();
   float Phi_Pion = lPion.Phi();
 
-  if( !passPtCut(Pt_Proton,Pt_Pion,Pt_Lambda) )  return;
+  // if( !passPtCut(Pt_Proton,Pt_Pion,Pt_Lambda) )  return;
 
   float Psi = 0.0;
   TVector3 nQ(TMath::Sin(Psi),-TMath::Cos(Psi),0.0); // direction of angular momentum with un-smeared EP
@@ -309,6 +316,10 @@ void fill(int const pid, TLorentzVector* lLambda, TLorentzVector const& lProton,
       p_sinInteDauOnly[i_eta]->Fill(vmsa::McEtaBin[i_eta],SinPhiStarRP);
     }
   }
+
+  if( !passSTARCut(lProton,lPion,lLambda) ) return; // apply STAR cut
+  p_cosSTAR->Fill(0,CosThetaStarRP);
+  p_sinSTAR->Fill(0,SinPhiStarRP);
 }
 
 TVector3 CalBoostedVector(TLorentzVector const lMcDau, TLorentzVector *lMcVec)
@@ -332,6 +343,20 @@ bool passEtaCut(float eta, int BinEta)
 bool passPtCut(float Pt_Proton, float Pt_Pion, float Pt_Lambda)
 {
   if( !(Pt_Proton > 0.15 && Pt_Pion > 0.15 && Pt_Lambda > 0.3) ) return kFALSE; // pT cut on daughter particles to be consistent with STAR
+
+  return kTRUE;
+}
+
+bool passSTARCut(TLorentzVector lProton, TLorentzVector lPion, TLorentzVector lLambda)
+{
+  if( !(lProton.Pt() > 0.15 && lProton.Eta() > -1.0 && lProton.Eta() < 1.0) ) 
+    return kFALSE; // STAR cut for proton
+
+  if( !(lPion.Pt() > 0.15 && lPion.Eta() > -1.0 && lPion.Eta() < 1.0) ) 
+    return kFALSE; // STAR cut for pion
+
+  if( !(lLambda.Pt() > 0.4 && lLambda.Pt() < 3.0 && lLambda.Rapidity() > -1.0 && lLambda.Rapidity() < 1.0) ) 
+    return kFALSE; // STAR cut for Lambda
 
   return kTRUE;
 }
@@ -376,6 +401,9 @@ void write(int energy, int pid, int counter)
     p_sinDauOnly[i_eta]->Write();
     p_sinInteDauOnly[i_eta]->Write();
   }
+
+  p_cosSTAR->Write();
+  p_sinSTAR->Write();
 
   File_OutPut->Close();
 }

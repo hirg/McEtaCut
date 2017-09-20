@@ -58,7 +58,7 @@ float const spinDirection[2] = {1.0,-1.0}; // pbar's momentum is opposite to ant
 float const alphaH = 0.642;
 float const invMass = 1.11568;
 
-// histograms
+// no STAR cuts
 TH3F *h_Tracks, *h_TracksProton, *h_TracksPion;
 TH3F *h_Eta;
 TH2F *h_phiRP, *h_cosRP;
@@ -68,6 +68,12 @@ TProfile *p_cosInteDau[20], *p_cosInteLambda[20], *p_cosInteDauOnly[20];
 TProfile *p_sinDau[20],     *p_sinLambda[20],     *p_sinDauOnly[20];
 TProfile *p_sinInteDau[20], *p_sinInteLambda[20], *p_sinInteDauOnly[20];
 
+// STAR pT cuts
+TProfile *p_cosPt, *p_sinPt;
+TProfile *p_cosInteDauPt[20];
+TProfile *p_sinInteDauPt[20];
+
+// STAR cuts
 TProfile *p_cosSTAR, *p_sinSTAR;
 
 TFile *File_InPut;
@@ -94,9 +100,6 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
 
   p_cosRP = new TProfile("p_cosRP","p_cosRP",BinPt,vmsa::ptMin,vmsa::ptMax);
   p_sinRP = new TProfile("p_sinRP","p_sinRP",BinPt,vmsa::ptMin,vmsa::ptMax);
-
-  p_cosSTAR = new TProfile("p_cosSTAR","p_cosSTAR",1,-1,1);
-  p_sinSTAR = new TProfile("p_sinSTAR","p_sinSTAR",1,-1,1);
 
 
   for(int i_eta = 0; i_eta < 20; ++i_eta)
@@ -132,6 +135,22 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
     ProName = Form("p_sinInteDauOnly_%d",i_eta);
     p_sinInteDauOnly[i_eta] = new TProfile(ProName.c_str(),ProName.c_str(),1,vmsa::McEtaBin[i_eta]-0.1,vmsa::McEtaBin[i_eta]+0.1);
   }
+
+  p_cosPt = new TProfile("p_cosPt","p_cosPt",BinPt,vmsa::ptMin,vmsa::ptMax);
+  p_sinPt = new TProfile("p_sinPt","p_sinPt",BinPt,vmsa::ptMin,vmsa::ptMax);
+
+  for(int i_eta = 0; i_eta < 20; ++i_eta)
+  {
+    string ProName;
+    ProName = Form("p_cosInteDauPt_%d",i_eta);
+    p_cosInteDauPt[i_eta] = new TProfile(ProName.c_str(),ProName.c_str(),1,vmsa::McEtaBin[i_eta]-0.1,vmsa::McEtaBin[i_eta]+0.1);
+
+    ProName = Form("p_sinInteDauPt_%d",i_eta);
+    p_sinInteDauPt[i_eta] = new TProfile(ProName.c_str(),ProName.c_str(),1,vmsa::McEtaBin[i_eta]-0.1,vmsa::McEtaBin[i_eta]+0.1);
+  }
+
+  p_cosSTAR = new TProfile("p_cosSTAR","p_cosSTAR",1,-1,1);
+  p_sinSTAR = new TProfile("p_sinSTAR","p_sinSTAR",1,-1,1);
 
   string InPutKinematics = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/Data/Kinematics.root",vmsa::mBeamEnergy[energy].c_str());
   File_InPut = TFile::Open(InPutKinematics.c_str());
@@ -177,7 +196,7 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
 
 TH1F* readpt(int energy, int pid, int centrality)
 {
-  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_Lambda");
+  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_Lambda_pt_eta_phi");
   TH1F *h_pt = (TH1F*)h_Kinematics->Project3D("x")->Clone();
 
   return h_pt;
@@ -185,7 +204,7 @@ TH1F* readpt(int energy, int pid, int centrality)
 
 TH1F* readeta(int energy, int pid, int centrality)
 {
-  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_Lambda");
+  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_Lambda_pt_eta_phi");
   TH1F *h_eta = (TH1F*)h_Kinematics->Project3D("y")->Clone();
 
   return h_eta;
@@ -193,7 +212,7 @@ TH1F* readeta(int energy, int pid, int centrality)
 
 TH1F* readphi(int energy, int pid, int centrality)
 {
-  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_Lambda");
+  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_Lambda_pt_eta_phi");
   TH1F *h_phi = (TH1F*)h_Kinematics->Project3D("z")->Clone();
 
   return h_phi;
@@ -269,8 +288,6 @@ void fill(int const pid, TLorentzVector* lLambda, TLorentzVector const& lProton,
   float Eta_Pion = lPion.Eta();
   float Phi_Pion = lPion.Phi();
 
-  // if( !passPtCut(Pt_Proton,Pt_Pion,Pt_Lambda) )  return;
-
   float Psi = 0.0;
   TVector3 nQ(TMath::Sin(Psi),-TMath::Cos(Psi),0.0); // direction of angular momentum with un-smeared EP
   float CosThetaStarSimple = vMcKpBoosted.Dot(nQ);
@@ -317,9 +334,23 @@ void fill(int const pid, TLorentzVector* lLambda, TLorentzVector const& lProton,
     }
   }
 
-  if( !passSTARCut(lProton,lPion,lLambda) ) return; // apply STAR cut
-  p_cosSTAR->Fill(0.0,CosThetaStarRP);
-  p_sinSTAR->Fill(0.0,SinPhiStarRP);
+  if( passPtCut(Pt_Proton,Pt_Pion,Pt_Lambda) )
+  { // apply STAR pT cuts
+    p_cosRP->Fill(Pt_Lambda,CosThetaStarRP);
+    p_sinRP->Fill(Pt_Lambda,SinPhiStarRP);
+
+    if( passEtaCut(Eta_Proton,i_eta) && passEtaCut(Eta_Pion,i_eta) && passEtaCut(Eta_Lambda,i_eta) )
+    {
+      p_cosInteDauPt[i_eta]->Fill(vmsa::McEtaBin[i_eta],CosThetaStarRP);
+      p_sinInteDauPt[i_eta]->Fill(vmsa::McEtaBin[i_eta],SinPhiStarRP);
+    }
+  }
+
+  if( passSTARCut(lProton,lPion,lLambda) )
+  { // apply STAR cuts
+    p_cosSTAR->Fill(0.0,CosThetaStarRP);
+    p_sinSTAR->Fill(0.0,SinPhiStarRP);
+  }
 }
 
 TVector3 CalBoostedVector(TLorentzVector const lMcDau, TLorentzVector *lMcVec)
@@ -342,7 +373,7 @@ bool passEtaCut(float eta, int BinEta)
 
 bool passPtCut(float Pt_Proton, float Pt_Pion, float Pt_Lambda)
 {
-  if( !(Pt_Proton > 0.15 && Pt_Pion > 0.15 && Pt_Lambda > 0.3) ) return kFALSE; // pT cut on daughter particles to be consistent with STAR
+  if( !(Pt_Proton > 0.15 && Pt_Pion > 0.15 && Pt_Lambda > 0.4 && Pt_Lambda < 3.0) ) return kFALSE; // pT cut on daughter particles to be consistent with STAR
 
   return kTRUE;
 }
@@ -401,6 +432,15 @@ void write(int energy, int pid, int counter)
     p_sinDauOnly[i_eta]->Write();
     p_sinInteDauOnly[i_eta]->Write();
   }
+
+    p_cosRP->Write()
+    p_sinRP->Write()
+
+    if( passEtaCut(Eta_Proton,i_eta) && passEtaCut(Eta_Pion,i_eta) && passEtaCut(Eta_Lambda,i_eta) )
+    {
+      p_cosInteDauPt[i_eta]->Write();
+      p_sinInteDauPt[i_eta]->Write();
+    }
 
   p_cosSTAR->Write();
   p_sinSTAR->Write();

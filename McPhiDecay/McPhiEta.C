@@ -108,7 +108,7 @@ void McPhiEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100000
 
 TH1F* readpt(int energy, int pid, int centrality)
 {
-  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_phi");
+  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_phi_pt_eta_phi");
   TH1F *h_pt = (TH1F*)h_Kinematics->Project3D("x")->Clone();
 
   return h_pt;
@@ -116,7 +116,7 @@ TH1F* readpt(int energy, int pid, int centrality)
 
 TH1F* readeta(int energy, int pid, int centrality)
 {
-  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_phi");
+  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_phi_pt_eta_phi");
   TH1F *h_eta = (TH1F*)h_Kinematics->Project3D("y")->Clone();
 
   return h_eta;
@@ -124,7 +124,7 @@ TH1F* readeta(int energy, int pid, int centrality)
 
 TH1F* readphi(int energy, int pid, int centrality)
 {
-  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_phi");
+  TH3F *h_Kinematics = (TH3F*)File_InPut->Get("h_phi_pt_eta_phi");
   TH1F *h_phi = (TH1F*)h_Kinematics->Project3D("z")->Clone();
 
   return h_phi;

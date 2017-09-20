@@ -17,15 +17,17 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
   string InPutHist = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McLambdaEta_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
   TFile *File_InPut = TFile::Open(InPutHist.c_str());
 
-  TProfile *p_cosRP, *p_sinRP;
-  p_cosRP = (TProfile*)File_InPut->Get("p_cosRP");
-  p_sinRP = (TProfile*)File_InPut->Get("p_sinRP");
+  TProfile *p_cosRP = (TProfile*)File_InPut->Get("p_cosRP");
+  TProfile *p_sinRP = (TProfile*)File_InPut->Get("p_sinRP");
+  TProfile *p_cosSTAR = (TProfile*)File_InPut->Get("p_cosSTAR");
+  TProfile *p_cosPt = (TProfile*)File_InPut->Get("p_cosPt");
 
   TGraphAsymmErrors *g_Dau = new TGraphAsymmErrors();
   TGraphAsymmErrors *g_Lambda = new TGraphAsymmErrors();
   TGraphAsymmErrors *g_DauOnly = new TGraphAsymmErrors();
-  TProfile *p_cosInteDau[20], *p_cosInteLambda[20], *p_cosInteDauOnly[20];
-  TProfile *p_sinInteDau[20], *p_sinInteLambda[20], *p_sinInteDauOnly[20];
+  TGraphAsymmErrors *g_DauPt = new TGraphAsymmErrors();
+  TProfile *p_cosInteDau[20], *p_cosInteLambda[20], *p_cosInteDauOnly[20], *p_cosInteDauPt[20];
+  TProfile *p_sinInteDau[20], *p_sinInteLambda[20], *p_sinInteDauOnly[20], *p_sinInteDauPt[20];
   for(int i_eta = 0; i_eta < 20; ++i_eta)
   {
     string ProName;
@@ -44,6 +46,11 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
     g_DauOnly->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_cosInteDauOnly[i_eta]->GetBinContent(1));
     g_DauOnly->SetPointError(i_eta,0.0,0.0,p_cosInteDauOnly[i_eta]->GetBinError(1),p_cosInteDauOnly[i_eta]->GetBinError(1));
 
+    ProName = Form("p_cosInteDauPt_%d",i_eta);
+    p_cosInteDauPt[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
+    g_DauPt->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_cosInteDauPt[i_eta]->GetBinContent(1));
+    g_DauPt->SetPointError(i_eta,0.0,0.0,p_cosInteDauPt[i_eta]->GetBinError(1),p_cosInteDauPt[i_eta]->GetBinError(1));
+
     ProName = Form("p_sinInteDau_%d",i_eta);
     p_sinInteDau[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
 
@@ -53,6 +60,7 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
     ProName = Form("p_sinInteDauOnly_%d",i_eta);
     p_sinInteDauOnly[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
   }
+
 
   TCanvas *c_PolaPt = new TCanvas("c_PolaPt","c_PolaPt",10,10,800,800);
   c_PolaPt->cd()->SetLeftMargin(0.15);
@@ -72,22 +80,27 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
   p_cosRP->GetYaxis()->CenterTitle();
   p_cosRP->GetYaxis()->SetLabelSize(0.04);
   p_cosRP->GetYaxis()->SetNdivisions(505);
-  p_cosRP->GetYaxis()->SetRangeUser(0.00,0.05);
-  p_cosRP->SetMarkerStyle(20);
+  p_cosRP->GetYaxis()->SetRangeUser(-0.01,0.03);
+  p_cosRP->SetMarkerStyle(24);
   p_cosRP->SetMarkerSize(1.4);
   p_cosRP->SetMarkerColor(kGray+2);
   p_cosRP->Draw("pE");
-  PlotLine(vmsa::ptMin,vmsa::ptMax,0.02,0.02,1,2,2);
+  PlotLine(vmsa::ptMin,vmsa::ptMax,0.01,0.01,1,2,2);
   TF1 *f_pol0 = new TF1("f_pol0","pol0",vmsa::ptMin,vmsa::ptMax);
-  f_pol0->SetParameter(0,0.02);
+  f_pol0->SetParameter(0,0.01);
   p_cosRP->Fit(f_pol0,"NQ");
   f_pol0->SetLineColor(2);
   f_pol0->SetLineWidth(2);
   f_pol0->SetLineStyle(2);
   f_pol0->Draw("l same");
-  plotTopLegend("input P_{H} = 0.02",3.0,0.03,0.03,1,0.0,42,0,1);
+  plotTopLegend("input P_{H} = 0.01",0.5,0.025,0.03,1,0.0,42,0,1);
   string PHfit = Form("extract P_{H} = %0.4f #pm %0.4f",f_pol0->GetParameter(0),f_pol0->GetParError(0));
-  plotTopLegend((char*)PHfit.c_str(),3.0,0.04,0.03,1,0.0,42,0,1);
+  plotTopLegend((char*)PHfit.c_str(),0.5,0.02,0.03,1,0.0,42,0,1);
+
+  p_cosPt->SetMarkerStyle(20);
+  p_cosPt->SetMarkerSize(1.4);
+  p_cosPt->SetMarkerColor(kAzure+2);
+  p_cosPt->Draw("pE same");
 
   string outputPolaPt = Form("../figures/c_PolaPt_%s_%s.eps",PID[pid].c_str(),vmsa::mBeamEnergy[energy].c_str());
   c_PolaPt->SaveAs(outputPolaPt.c_str());
@@ -116,9 +129,9 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
   h_play->GetYaxis()->CenterTitle();
   h_play->GetYaxis()->SetLabelSize(0.04);
   h_play->GetYaxis()->SetNdivisions(505);
-  h_play->GetYaxis()->SetRangeUser(0.01,0.03);
+  h_play->GetYaxis()->SetRangeUser(0.00,0.03);
   h_play->Draw("pE");
-  PlotLine(0.0,10.0,0.0,0.0,1,2,2);
+  PlotLine(0.0,10.0,0.01,0.01,1,2,2);
 
   g_Dau->SetMarkerStyle(24);
   g_Dau->SetMarkerSize(1.4);
@@ -135,12 +148,18 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
   g_Lambda->SetMarkerColor(1);
   g_Lambda->Draw("pE same");
 
+  g_DauPt->SetMarkerStyle(20);
+  g_DauPt->SetMarkerSize(1.4);
+  g_DauPt->SetMarkerColor(4);
+  g_DauPt->Draw("pE same");
+
   TLegend *legEta = new TLegend(0.4,0.6,0.8,0.8);
   legEta->SetBorderSize(0);
   legEta->SetFillColor(0);
   legEta->AddEntry(g_Dau,"cut on daughters and #Lambda","p");
   legEta->AddEntry(g_DauOnly,"cut on daughters","p");
   legEta->AddEntry(g_Lambda,"cut on #Lambda only","p");
+  legEta->AddEntry(g_DauPt,"cut on daughters and #Lambda with STAR p_{T} cuts","p");
   legEta->Draw("same");
   string outputPolaEta = Form("../figures/c_PolaEta_%s_%s.eps",PID[pid].c_str(),vmsa::mBeamEnergy[energy].c_str());
   c_PolaEta->SaveAs(outputPolaEta.c_str());
@@ -223,5 +242,8 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
   g_Lambda->Write();
   g_DauOnly->SetName("g_DauOnly");
   g_DauOnly->Write();
+  g_DauPt->SetName("g_DauPt");
+  g_DauPt->Write();
+  p_cosSTAR->Write();
   File_OutPut->Close();
 }

@@ -159,7 +159,7 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
   h_eta = readeta(energy,pid,cent);
   h_phi = readphi(energy,pid,cent);
 
-  float pHPhy = 0.02; // input pH value
+  float pHPhy = 0.01; // input pH value
   f_pHPhy = new TF1("f_pHPhy",polarization,-1.0,1.0,3);
   f_pHPhy->FixParameter(0,pHPhy);
   f_pHPhy->FixParameter(1,1.0);
@@ -304,6 +304,7 @@ void fill(int const pid, TLorentzVector* lLambda, TLorentzVector const& lProton,
   h_TracksProton->Fill(Pt_Proton,Eta_Proton,Phi_Proton);
   h_TracksPion->Fill(Pt_Pion,Eta_Pion,Phi_Pion);
   h_Eta->Fill(Eta_Lambda,Eta_Proton,Eta_Pion);
+
   p_cosRP->Fill(Pt_Lambda,CosThetaStarRP);
   p_sinRP->Fill(Pt_Lambda,SinPhiStarRP);
 
@@ -336,13 +337,16 @@ void fill(int const pid, TLorentzVector* lLambda, TLorentzVector const& lProton,
 
   if( passPtCut(Pt_Proton,Pt_Pion,Pt_Lambda) )
   { // apply STAR pT cuts
-    p_cosRP->Fill(Pt_Lambda,CosThetaStarRP);
-    p_sinRP->Fill(Pt_Lambda,SinPhiStarRP);
+    p_cosPt->Fill(Pt_Lambda,CosThetaStarRP);
+    p_sinPt->Fill(Pt_Lambda,SinPhiStarRP);
 
-    if( passEtaCut(Eta_Proton,i_eta) && passEtaCut(Eta_Pion,i_eta) && passEtaCut(Eta_Lambda,i_eta) )
+    for(int i_eta = 0; i_eta < 20; ++i_eta)
     {
-      p_cosInteDauPt[i_eta]->Fill(vmsa::McEtaBin[i_eta],CosThetaStarRP);
-      p_sinInteDauPt[i_eta]->Fill(vmsa::McEtaBin[i_eta],SinPhiStarRP);
+      if( passEtaCut(Eta_Proton,i_eta) && passEtaCut(Eta_Pion,i_eta) && passEtaCut(Eta_Lambda,i_eta) )
+      {
+	p_cosInteDauPt[i_eta]->Fill(vmsa::McEtaBin[i_eta],CosThetaStarRP);
+	p_sinInteDauPt[i_eta]->Fill(vmsa::McEtaBin[i_eta],SinPhiStarRP);
+      }
     }
   }
 
@@ -433,14 +437,14 @@ void write(int energy, int pid, int counter)
     p_sinInteDauOnly[i_eta]->Write();
   }
 
-    p_cosRP->Write()
-    p_sinRP->Write()
+  p_cosPt->Write();
+  p_sinPt->Write();
 
-    if( passEtaCut(Eta_Proton,i_eta) && passEtaCut(Eta_Pion,i_eta) && passEtaCut(Eta_Lambda,i_eta) )
-    {
-      p_cosInteDauPt[i_eta]->Write();
-      p_sinInteDauPt[i_eta]->Write();
-    }
+  for(int i_eta = 0; i_eta < 20; ++i_eta)
+  {
+    p_cosInteDauPt[i_eta]->Write();
+    p_sinInteDauPt[i_eta]->Write();
+  }
 
   p_cosSTAR->Write();
   p_sinSTAR->Write();

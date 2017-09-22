@@ -39,7 +39,7 @@ bool passPtCut(float Pt_lKplus, float Pt_lKminus);
 TH3F *h_Tracks;
 TH3F *h_Eta;
 TH2F *h_phiRP, *h_cosRP;
-TH2F *h_CosEtaKaon[20], *h_CosEtaPhi[20], *h_CosEtaKOnly[20];
+TH2F *h_CosEtaKaon[20], *h_CosEtaPhi[20], *h_CosEtaKOnly[20], *h_CosEtaKpT[20];
 
 TFile *File_InPut;
 // sampling functions
@@ -68,6 +68,8 @@ void McPhiEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100000
     h_CosEtaPhi[i_eta] = new TH2F(HistName.c_str(),HistName.c_str(),BinPt,vmsa::ptMin,vmsa::ptMax,BinY,-1.0,1.0);
     HistName = Form("h_CosEtaKOnly_%d",i_eta);
     h_CosEtaKOnly[i_eta] = new TH2F(HistName.c_str(),HistName.c_str(),BinPt,vmsa::ptMin,vmsa::ptMax,BinY,-1.0,1.0);
+    HistName = Form("h_CosEtaKpT_%d",i_eta);
+    h_CosEtaKpT[i_eta] = new TH2F(HistName.c_str(),HistName.c_str(),BinPt,vmsa::ptMin,vmsa::ptMax,BinY,-1.0,1.0);
   }
 
   string InPutKinematics = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/Data/Kinematics.root",vmsa::mBeamEnergy[energy].c_str());
@@ -192,8 +194,6 @@ void fill(TLorentzVector* lPhi, TLorentzVector const& lKplus, TLorentzVector con
   float Pt_lKminus = lKminus.Pt();
   float Eta_lKminus = lKminus.Eta();
 
-  // if( !passPtCut(Pt_lKplus,Pt_lKminus) )  return;
-
   TVector3 nQ(0.0,-1.0,0.0); // direction of angular momentum with un-smeared EP
   float CosThetaStarRP = vMcKpBoosted.Dot(nQ);
 
@@ -214,6 +214,17 @@ void fill(TLorentzVector* lPhi, TLorentzVector const& lKplus, TLorentzVector con
     if( passEtaCut(Eta_lKplus,i_eta) && passEtaCut(Eta_lKminus,i_eta) )
     {
       h_CosEtaKOnly[i_eta]->Fill(Pt_lPhi,CosThetaStarRP);
+    }
+  }
+
+  if( passPtCut(Pt_lKplus,Pt_lKminus) ) // apply STAR pT cuts
+  {
+    for(int i_eta = 0; i_eta < 20; ++i_eta)
+    {
+      if( passEtaCut(Eta_lKplus,i_eta) && passEtaCut(Eta_lKminus,i_eta) && passEtaCut(Eta_lPhi,i_eta) )
+      {
+	h_CosEtaKpT[i_eta]->Fill(Pt_lPhi,CosThetaStarRP);
+      }
     }
   }
 }
@@ -259,6 +270,7 @@ void write(int energy)
     h_CosEtaKaon[i_eta]->Write();
     h_CosEtaPhi[i_eta]->Write();
     h_CosEtaKOnly[i_eta]->Write();
+    h_CosEtaKpT[i_eta]->Write();
   }
 
   File_OutPut->Close();

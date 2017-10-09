@@ -10,44 +10,44 @@
 #include "../Utility/StSpinAlignmentCons.h"
 #include "../Utility/draw.h"
 
-void plotMcLambdaEta(int energy = 6, int pid = 0)
+void plotMcLambdaSin(int energy = 6, int pid = 0)
 {
   string PID[2] = {"L","Lbar"};
   // string InPutHist = Form("/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McLambdaEta_%d.root",pid);
   string InPutHist = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McLambdaEta_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
   TFile *File_InPut = TFile::Open(InPutHist.c_str());
 
-  TProfile *p_cosRP = (TProfile*)File_InPut->Get("p_cosRP");
-  TProfile *p_cosSTAR = (TProfile*)File_InPut->Get("p_cosSTAR");
-  TProfile *p_cosPt = (TProfile*)File_InPut->Get("p_cosPt");
+  TProfile *p_sinRP = (TProfile*)File_InPut->Get("p_sinRP");
+  TProfile *p_sinSTAR = (TProfile*)File_InPut->Get("p_sinSTAR");
+  TProfile *p_sinPt = (TProfile*)File_InPut->Get("p_sinPt");
 
   TGraphAsymmErrors *g_Dau = new TGraphAsymmErrors();
   TGraphAsymmErrors *g_Lambda = new TGraphAsymmErrors();
   TGraphAsymmErrors *g_DauOnly = new TGraphAsymmErrors();
   TGraphAsymmErrors *g_DauPt = new TGraphAsymmErrors();
-  TProfile *p_cosInteDau[20], *p_cosInteLambda[20], *p_cosInteDauOnly[20], *p_cosInteDauPt[20];
+  TProfile *p_sinInteDau[20], *p_sinInteLambda[20], *p_sinInteDauOnly[20], *p_sinInteDauPt[20];
   for(int i_eta = 0; i_eta < 20; ++i_eta)
   {
     string ProName;
-    ProName = Form("p_cosInteDau_%d",i_eta);
-    p_cosInteDau[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
-    g_Dau->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_cosInteDau[i_eta]->GetBinContent(1));
-    g_Dau->SetPointError(i_eta,0.0,0.0,p_cosInteDau[i_eta]->GetBinError(1),p_cosInteDau[i_eta]->GetBinError(1));
+    ProName = Form("p_sinInteDau_%d",i_eta);
+    p_sinInteDau[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
+    g_Dau->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_sinInteDau[i_eta]->GetBinContent(1));
+    g_Dau->SetPointError(i_eta,0.0,0.0,p_sinInteDau[i_eta]->GetBinError(1),p_sinInteDau[i_eta]->GetBinError(1));
 
-    ProName = Form("p_cosInteLambda_%d",i_eta);
-    p_cosInteLambda[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
-    g_Lambda->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_cosInteLambda[i_eta]->GetBinContent(1));
-    g_Lambda->SetPointError(i_eta,0.0,0.0,p_cosInteLambda[i_eta]->GetBinError(1),p_cosInteLambda[i_eta]->GetBinError(1));
+    ProName = Form("p_sinInteLambda_%d",i_eta);
+    p_sinInteLambda[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
+    g_Lambda->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_sinInteLambda[i_eta]->GetBinContent(1));
+    g_Lambda->SetPointError(i_eta,0.0,0.0,p_sinInteLambda[i_eta]->GetBinError(1),p_sinInteLambda[i_eta]->GetBinError(1));
 
-    ProName = Form("p_cosInteDauOnly_%d",i_eta);
-    p_cosInteDauOnly[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
-    g_DauOnly->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_cosInteDauOnly[i_eta]->GetBinContent(1));
-    g_DauOnly->SetPointError(i_eta,0.0,0.0,p_cosInteDauOnly[i_eta]->GetBinError(1),p_cosInteDauOnly[i_eta]->GetBinError(1));
+    ProName = Form("p_sinInteDauOnly_%d",i_eta);
+    p_sinInteDauOnly[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
+    g_DauOnly->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_sinInteDauOnly[i_eta]->GetBinContent(1));
+    g_DauOnly->SetPointError(i_eta,0.0,0.0,p_sinInteDauOnly[i_eta]->GetBinError(1),p_sinInteDauOnly[i_eta]->GetBinError(1));
 
-    ProName = Form("p_cosInteDauPt_%d",i_eta);
-    p_cosInteDauPt[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
-    g_DauPt->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_cosInteDauPt[i_eta]->GetBinContent(1));
-    g_DauPt->SetPointError(i_eta,0.0,0.0,p_cosInteDauPt[i_eta]->GetBinError(1),p_cosInteDauPt[i_eta]->GetBinError(1));
+    ProName = Form("p_sinInteDauPt_%d",i_eta);
+    p_sinInteDauPt[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
+    g_DauPt->SetPoint(i_eta,vmsa::McEtaBin[i_eta],p_sinInteDauPt[i_eta]->GetBinContent(1));
+    g_DauPt->SetPointError(i_eta,0.0,0.0,p_sinInteDauPt[i_eta]->GetBinError(1),p_sinInteDauPt[i_eta]->GetBinError(1));
   }
 
 
@@ -57,27 +57,27 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
   c_PolaPt->cd()->SetTicks(1,1);
   c_PolaPt->cd()->SetGrid(0,0);
 
-  p_cosRP->SetTitle("");
-  p_cosRP->SetStats(0);
-  p_cosRP->GetXaxis()->SetTitle("p_{T} (GeV/c)");
-  p_cosRP->GetXaxis()->CenterTitle();
-  p_cosRP->GetXaxis()->SetLabelSize(0.04);
-  p_cosRP->GetXaxis()->SetNdivisions(505);
+  p_sinRP->SetTitle("");
+  p_sinRP->SetStats(0);
+  p_sinRP->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  p_sinRP->GetXaxis()->CenterTitle();
+  p_sinRP->GetXaxis()->SetLabelSize(0.04);
+  p_sinRP->GetXaxis()->SetNdivisions(505);
 
-  p_cosRP->GetYaxis()->SetTitle("P_{H}");
-  p_cosRP->GetYaxis()->SetTitleSize(0.04);
-  p_cosRP->GetYaxis()->CenterTitle();
-  p_cosRP->GetYaxis()->SetLabelSize(0.04);
-  p_cosRP->GetYaxis()->SetNdivisions(505);
-  p_cosRP->GetYaxis()->SetRangeUser(-0.01,0.03);
-  p_cosRP->SetMarkerStyle(24);
-  p_cosRP->SetMarkerSize(1.4);
-  p_cosRP->SetMarkerColor(kGray+2);
-  p_cosRP->Draw("pE");
+  p_sinRP->GetYaxis()->SetTitle("P_{H}");
+  p_sinRP->GetYaxis()->SetTitleSize(0.04);
+  p_sinRP->GetYaxis()->CenterTitle();
+  p_sinRP->GetYaxis()->SetLabelSize(0.04);
+  p_sinRP->GetYaxis()->SetNdivisions(505);
+  p_sinRP->GetYaxis()->SetRangeUser(-0.01,0.03);
+  p_sinRP->SetMarkerStyle(24);
+  p_sinRP->SetMarkerSize(1.4);
+  p_sinRP->SetMarkerColor(kGray+2);
+  p_sinRP->Draw("pE");
   PlotLine(vmsa::ptMin,vmsa::ptMax,0.01,0.01,1,2,2);
   TF1 *f_pol0 = new TF1("f_pol0","pol0",vmsa::ptMin,vmsa::ptMax);
   f_pol0->SetParameter(0,0.01);
-  p_cosRP->Fit(f_pol0,"NQ");
+  p_sinRP->Fit(f_pol0,"NQ");
   f_pol0->SetLineColor(2);
   f_pol0->SetLineWidth(2);
   f_pol0->SetLineStyle(2);
@@ -86,10 +86,10 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
   string PHfit = Form("extract P_{H} = %0.4f #pm %0.4f",f_pol0->GetParameter(0),f_pol0->GetParError(0));
   plotTopLegend((char*)PHfit.c_str(),0.5,0.02,0.03,1,0.0,42,0,1);
 
-  p_cosPt->SetMarkerStyle(20);
-  p_cosPt->SetMarkerSize(1.4);
-  p_cosPt->SetMarkerColor(kAzure+2);
-  p_cosPt->Draw("pE same");
+  p_sinPt->SetMarkerStyle(20);
+  p_sinPt->SetMarkerSize(1.4);
+  p_sinPt->SetMarkerColor(kAzure+2);
+  p_sinPt->Draw("pE same");
 
   string outputPolaPt = Form("../figures/c_PolaPt_%s_%s.eps",PID[pid].c_str(),vmsa::mBeamEnergy[energy].c_str());
   c_PolaPt->SaveAs(outputPolaPt.c_str());
@@ -220,8 +220,8 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
   string outputEtaPPi = Form("../figures/c_EtaPPi_%s_%s.eps",PID[pid].c_str(),vmsa::mBeamEnergy[energy].c_str());
   c_EtaPPi->SaveAs(outputEtaPPi.c_str());
   
-  // string outputfile = Form("/Users/xusun/Data/SpinAlignment/AuAu%s/MonteCarlo/McPH_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
-  string outputfile = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McPH_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
+  // string outputfile = Form("/Users/xusun/Data/SpinAlignment/AuAu%s/MonteCarlo/McPHsin_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
+  string outputfile = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McPHsin_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
   TFile *File_OutPut = new TFile(outputfile.c_str(),"RECREATE");
   File_OutPut->cd();
   h_play->Write();
@@ -233,6 +233,6 @@ void plotMcLambdaEta(int energy = 6, int pid = 0)
   g_DauOnly->Write();
   g_DauPt->SetName("g_DauPt");
   g_DauPt->Write();
-  p_cosSTAR->Write();
+  p_sinSTAR->Write();
   File_OutPut->Close();
 }

@@ -105,7 +105,7 @@ void McLambdaEtaBoost(int energy = 6, int pid = 0, int cent = 0, int const NMax 
   f_spec = readspec(energy,pid,cent);
   h_eta = readeta(energy,pid,cent);
 
-  float pHPhy = 0.2;
+  float pHPhy = 0.01;
   f_pHPhy = new TF1("f_pHPhy",polarization,-1.0,1.0,3);
   f_pHPhy->FixParameter(0,pHPhy);
   f_pHPhy->FixParameter(1,1.0);

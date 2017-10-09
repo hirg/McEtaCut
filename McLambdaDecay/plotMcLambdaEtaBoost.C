@@ -14,17 +14,19 @@ float const McEtaBinFake[17] = {0.001,0.25,0.5,0.75,1.0,1.25,1.5,1.75,2.0,2.25,2
 float const McSinFake[17] = {1.2732,1.2604,1.2263,1.1815,1.1363,1.0972,1.0666,1.0443,1.0289,1.0185,1.0117,1.0073,1.0046,1.0028,1.0017,1.0011,1.0007};
 float const McCosFake[17] = {1.5000,1.4700,1.3932,1.2983,1.21  ,1.1402,1.0904,1.0569,1.0353,1.0217,1.0133,1.0081,1.0049,1.0030,1.0018,1.0011,1.0007};
 
-void plotMcLambdaEtaBoost(int pid = 0)
+void plotMcLambdaEtaBoost(int energy = 6, int pid = 0)
 {
 
   string PID[2] = {"L","Lbar"};
-  string InPutHist = Form("/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McLambdaEtaBoost_%d.root",pid);
+  // string InPutHist = Form("/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McLambdaEtaBoost_%d.root",pid);
+  string InPutHist = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McLambdaEtaBoost_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
   TFile *File_InPut = TFile::Open(InPutHist.c_str());
 
   TProfile *p_cosRP, *p_sinRP;
   p_cosRP = (TProfile*)File_InPut->Get("p_cosRP");
   p_sinRP = (TProfile*)File_InPut->Get("p_sinRP");
 
+  float pHPhy = 0.01;
   TGraphAsymmErrors *g_LambdaMcSin = new TGraphAsymmErrors();
   TGraphAsymmErrors *g_LambdaMcCos = new TGraphAsymmErrors();
   TGraphAsymmErrors *g_LambdaAnaSin = new TGraphAsymmErrors();
@@ -38,14 +40,14 @@ void plotMcLambdaEtaBoost(int pid = 0)
     p_cosInteDau[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
     g_LambdaMcCos->SetPoint(i_eta,McEtaBinFake[i_eta],p_cosInteDau[i_eta]->GetBinContent(1));
     g_LambdaMcCos->SetPointError(i_eta,0.0,0.0,p_cosInteDau[i_eta]->GetBinError(1),p_cosInteDau[i_eta]->GetBinError(1));
-    g_LambdaAnaCos->SetPoint(i_eta,McEtaBinFake[i_eta],McCosFake[i_eta]*0.2);
+    g_LambdaAnaCos->SetPoint(i_eta,McEtaBinFake[i_eta],McCosFake[i_eta]*pHPhy);
 
     ProName = Form("p_sinInteDau_%d",i_eta);
     p_sinInteDau[i_eta] = (TProfile*)File_InPut->Get(ProName.c_str());
     g_LambdaMcSin->SetPoint(i_eta,McEtaBinFake[i_eta],p_sinInteDau[i_eta]->GetBinContent(1));
     g_LambdaMcSin->SetPointError(i_eta,0.0,0.0,p_sinInteDau[i_eta]->GetBinError(1),p_sinInteDau[i_eta]->GetBinError(1));
 
-    g_LambdaAnaSin->SetPoint(i_eta,McEtaBinFake[i_eta],McSinFake[i_eta]*0.2);
+    g_LambdaAnaSin->SetPoint(i_eta,McEtaBinFake[i_eta],McSinFake[i_eta]*pHPhy);
   }
 
   TCanvas *c_PolaPt = new TCanvas("c_PolaPt","c_PolaPt",10,10,800,800);
@@ -66,7 +68,7 @@ void plotMcLambdaEtaBoost(int pid = 0)
   p_cosRP->GetYaxis()->CenterTitle();
   p_cosRP->GetYaxis()->SetLabelSize(0.04);
   p_cosRP->GetYaxis()->SetNdivisions(505);
-  p_cosRP->GetYaxis()->SetRangeUser(0.1,0.4);
+  p_cosRP->GetYaxis()->SetRangeUser(pHPhy-0.01,pHPhy+0.03);
   p_cosRP->SetMarkerStyle(20);
   p_cosRP->SetMarkerSize(1.4);
   p_cosRP->SetMarkerColor(kGray+2);
@@ -109,7 +111,7 @@ void plotMcLambdaEtaBoost(int pid = 0)
   h_playCom->GetYaxis()->CenterTitle();
   h_playCom->GetYaxis()->SetLabelSize(0.04);
   h_playCom->GetYaxis()->SetNdivisions(505);
-  h_playCom->GetYaxis()->SetRangeUser(0.0,0.5);
+  h_playCom->GetYaxis()->SetRangeUser(pHPhy-0.01,pHPhy+0.03);
   h_playCom->Draw("pE");
 
   for(int i_eta = 0; i_eta < 17; ++i_eta)
@@ -131,7 +133,7 @@ void plotMcLambdaEtaBoost(int pid = 0)
   legEta->AddEntry(p_cosInteDau[0],"#frac{3}{#alpha_{H}}<cos(#theta*)>","p");
   legEta->AddEntry(p_sinInteDau[0],"#frac{#pi}{8#alpha_{H}}<sin(#Psi-#phi_{p}*)>","p");
   legEta->Draw("same");
-  PlotLine(-0.05,4.1,0.2,0.2,1,2,2);
+  PlotLine(-0.05,4.1,pHPhy,pHPhy,1,2,2);
   string outputPolaCom = Form("../figures/c_PolaCom_%s.eps",PID[pid].c_str());
   c_PolaCom->SaveAs(outputPolaCom.c_str());
 
@@ -159,9 +161,9 @@ void plotMcLambdaEtaBoost(int pid = 0)
   h_play->GetYaxis()->CenterTitle();
   h_play->GetYaxis()->SetLabelSize(0.04);
   h_play->GetYaxis()->SetNdivisions(505);
-  h_play->GetYaxis()->SetRangeUser(0.19,0.4);
+  h_play->GetYaxis()->SetRangeUser(pHPhy-0.01,pHPhy+0.03);
   h_play->Draw("pE");
-  PlotLine(-0.05,4.1,0.2,0.2,1,2,2);
+  PlotLine(-0.05,4.1,pHPhy,pHPhy,1,2,2);
 
   g_LambdaMcCos->SetMarkerStyle(20);
   g_LambdaMcCos->SetMarkerSize(1.4);
@@ -200,7 +202,9 @@ void plotMcLambdaEtaBoost(int pid = 0)
   string outputPolaEta = Form("../figures/c_PolaEta_%s.eps",PID[pid].c_str());
   c_PolaEta->SaveAs(outputPolaEta.c_str());
 
-  TFile *File_OutPut = new TFile("/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McPHBoost.root","RECREATE");
+  // string OutPutFile = Form("/Users/xusun/Data/SpinAlignment/AuAu200GeV/MonteCarlo/McPHBoost_%d.root,pid");
+  string OutPutFile = Form("/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu%s/SpinAlignment/Phi/MonteCarlo/McPHBoost_%d.root",vmsa::mBeamEnergy[energy].c_str(),pid);
+  TFile *File_OutPut = new TFile(OutPutFile.c_str(),"RECREATE");
   File_OutPut->cd();
   h_play->Write();
   g_LambdaMcCos->SetName("g_LambdaMcCos");

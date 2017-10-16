@@ -80,6 +80,7 @@ TFile *File_InPut;
 // sampling functions
 TF1 *f_pHPhy;
 TH1F *h_pt, *h_eta, *h_phi;
+TF1 *f_flow;
 
 
 TPythia6Decayer* pydecay;
@@ -165,6 +166,9 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
   f_pHPhy->FixParameter(1,1.0);
   f_pHPhy->FixParameter(2,alphaH*spinDirection[pid]);
 
+  f_flow = new TF1("f_flow",flowSample,-TMath::Pi(),TMath::Pi(),1);
+  f_flow->SetParameter(0,0.1);
+
   TStopwatch* stopWatch = new TStopwatch();
   stopWatch->Start();
   if(gRandom) delete gRandom;
@@ -222,7 +226,8 @@ void getKinematics(TLorentzVector& lLambda, double const mass)
 {
   double const pt = h_pt->GetRandom();
   double const eta = h_eta->GetRandom();
-  double const phi = h_phi->GetRandom();
+  // double const phi = h_phi->GetRandom();
+  double const phi = f_flow->GetRandom();
 
   lLambda.SetPtEtaPhiM(pt,eta,phi,mass);
 }

@@ -166,8 +166,9 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
   f_pHPhy->FixParameter(1,1.0);
   f_pHPhy->FixParameter(2,alphaH*spinDirection[pid]);
 
+  float v2 = 0.01;
   f_flow = new TF1("f_flow",flowSample,-TMath::Pi(),TMath::Pi(),1);
-  f_flow->SetParameter(0,0.1);
+  f_flow->SetParameter(0,v2);
 
   TStopwatch* stopWatch = new TStopwatch();
   stopWatch->Start();
@@ -183,7 +184,7 @@ void McLambdaEta(int energy = 6, int pid = 0, int cent = 0, int const NMax = 100
   TLorentzVector *lLambda = new TLorentzVector();
   for(int i_ran = 0; i_ran < NMax; ++i_ran)
   {
-    if (floor(10.0*i_ran/ static_cast<float>(NMax)) > floor(10.0*(i_ran-1)/ static_cast<float>(NMax)))
+    if (floor(100.0*i_ran/ static_cast<float>(NMax)) > floor(100.0*(i_ran-1)/ static_cast<float>(NMax)))
     cout << "=> processing data: " << 100.0*i_ran/ static_cast<float>(NMax) << "%" << endl;
 
     getKinematics(*lLambda,invMass);

@@ -1,0 +1,95 @@
+#!/bin/bash
+
+#SBATCH -t 23:25:00   --ntasks=3 --account nstaff
+
+# Pick one of the following lines to toggle: chos or shifter or Cori
+# (toggle  '#-SBATCH' vs. '#SBATCH'  )
+#-SBATCH -J star-chos -p shared-chos 
+#SBATCH -J star-shift -p shared --image=custom:pdsf-sl64-star:v3
+#-SBATCH -J star-cori -p debug -N1 --image=custom:pdsf-sl64-star:v6  -C haswell
+
+echo "start-A "`hostname`" in PWD="`pwd`
+
+startSkew=30 # (seconds), random delay for task
+nsleep=$(($RANDOM % $startSkew))
+echo nsleep=$nsleep
+sleep $nsleep
+
+#tasks script to be executed
+job_sh=McLambdaEta.csh
+export NUM_EVE=50000000
+export Energy=0
+export PID=0
+export Cent=0
+# export Counter=27
+
+# fixed one data file
+#dataName=st_mtd_adc_16114048_raw_2500009.daq
+
+# OR use data from the listA, size 580 daq files,  200-400 events in the daq 
+#1 export PATH_DAQ=/global/projecta/projectdirs/starprod/daq/2015/pp200_mtd/
+#1 dataList=dataListA.txt
+#1 export STAR_VER=SL16d
+#1 export BFC_String="DbV20160418,P2014a,pxlHit,istHit,btof,mtd,mtdCalib,BEmcChkStat,-evout,CorrX,OSpaceZ2,OGridLeak3D,-hitfilt"
+
+
+# OR use data from the listB, size 500 daq files,  10k events in the daq, 1 eve taks 10-15 sec
+# but some daw files, e.g. st_physics_17133038_raw_4000014.daq require 40-70 sec/eve
+# export PATH_DAQ=/project/projectdirs/mpccc/balewski/star_daq_2016
+# dataList=dataListB.txt
+export STAR_VER=pro
+
+export LOG_PATH=/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu7GeV/Log/ToyModel
+mkdir -p $LOG_PATH
+echo write McLambdaDecay logs to  $LOG_PATH
+
+# kD=${SLURM_ARRAY_TASK_ID-1}
+# echo pick data $kD from list $dataList
+# dataName=${PATH_DAQ}/`head -n $kD  $dataList | tail -n1`
+
+# pick STAR library you want to use
+# export EXEC_NAME=root4star
+export EXEC_NAME=root
+
+# define permanent output dir, here it is jobID dependent
+# export OUT_DIR=/project/projectdirs/starprod/rnc/xusun/OutPut/AuAu7GeV/SpinAlignment/Phi/MonteCarlo/${SLURM_JOB_NAME}/${SLURM_JOB_ID}
+# mkdir -p ${OUT_DIR}
+
+# prepare sandbox - it is done for you by SLURM
+export WRK_DIR=$SLURM_TMP
+
+# used code must be copied to the sandbox
+# optional:
+# it is safer to copy all code to the sandbox, so job still runs fine even if you recompile your local code 
+codeDir=/global/homes/x/xusun/STAR/McEtaCut/
+
+echo Prepare a local copy of binaries
+time( cp -rpL McLambdaEta.csh  $WRK_DIR ; cp -rpL $codeDir  $WRK_DIR )
+
+echo run job in STAR_VER=$STAR_VER  WRK_DIR=$WRK_DIR
+echo see vCores=$SLURM_CPUS_ON_NODE
+
+ls -l  ${job_sh}
+ls -l ${WRK_DIR}/McEtaCut/McLambdaDecay/*.C
+if [[ $SLURM_JOB_PARTITION == *"-chos" ]]
+then
+    echo  run-in-chos
+    CHOS=sl64 chos  $WRK_DIR/${job_sh}
+else
+    echo  run-in-shifter
+    # minor operation allowing to jump into tcsh inside shifter image
+    unset MODULE_VERSION_STACK
+    unset MODULE_VERSION
+    unset MODULEPATH MODULESHOME
+    unset LOADEDMODULES PRGENVMODULES
+    shifter   --volume=/global/project:/project   /bin/tcsh $WRK_DIR/${job_sh}
+fi
+echo end-A-slurm-job
+
+# mv slurm log to final destination 
+if [ -z ${SLURM_ARRAY_JOB_ID+x} ]; then 
+  mv slurm-${SLURM_JOB_ID}.out $LOG_PATH
+else 
+  mv slurm-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out $LOG_PATH
+fi
+

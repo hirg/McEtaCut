@@ -227,8 +227,8 @@ void getKinematics(TLorentzVector& lLambda, double const mass)
 {
   double const pt = h_pt->GetRandom();
   double const eta = h_eta->GetRandom();
-  // double const phi = h_phi->GetRandom();
-  double const phi = f_flow->GetRandom();
+  double const phi = h_phi->GetRandom();
+  // double const phi = f_flow->GetRandom();
 
   lLambda.SetPtEtaPhiM(pt,eta,phi,mass);
 }
